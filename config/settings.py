@@ -7,9 +7,9 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-ax4kk!smrsq75tut2=yfc5c%$6$2t=l_d4bt*d++xv9s3-h^$f"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG") == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -23,9 +23,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    'drf_yasg',
     "django_celery_beat",
     'corsheaders',
     "users",
+    "habits",
 ]
 
 MIDDLEWARE = [
@@ -104,15 +106,15 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
-
+MEDIA_URL = "media/"
+MEDIA_ROOT = "media/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
-    ],
-    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    ]
 }
 
 SIMPLE_JWT = {
@@ -128,7 +130,7 @@ CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
+AUTH_USER_MODEL = "users.User"
 # CELERY_BEAT_SCHEDULE = {
 #     "Деактивация неактивных пользователей": {
 #         "task": "users.tasks.user_active_period",
