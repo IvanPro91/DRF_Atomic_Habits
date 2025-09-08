@@ -1,8 +1,5 @@
-from rest_framework import filters, viewsets, generics
-from rest_framework.generics import CreateAPIView, get_object_or_404
+from rest_framework import generics
 from rest_framework.permissions import AllowAny
-from rest_framework.request import Request
-from rest_framework.response import Response
 
 from users.serializers import UserSerializer
 
