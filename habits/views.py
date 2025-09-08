@@ -1,11 +1,11 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django_celery_beat.models import PeriodicTask
 from rest_framework import generics
 
 from habits.models import Habits
 from habits.paginators import HabitsPagination
 from habits.serializers import HabitsSerializer, PublicHabitsSerializer
-from habits.services import create_schedule, make_replacements, create_replacements, create_task
+from habits.services import create_replacements, create_schedule, create_task, make_replacements
 from users.permissions import IsUser
 
 

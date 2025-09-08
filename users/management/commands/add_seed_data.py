@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.utils import timezone
-
 from lms.models import Course, Lesson
+
 from users.models import Pay, User
 
 User = get_user_model()
