@@ -105,6 +105,15 @@ jobs:
       - name: Setup and configure PostgreSQL
         run: |
           ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          sudo apt update
+          
+          sudo apt install -y postgresql postgresql-contrib
+          
+          sudo systemctl start postgresql
+          sudo systemctl enable postgresql
+          
+          sudo systemctl status postgresql
+          
           if ! systemctl is-active --quiet postgresql; then
             echo "PostgreSQL is not running. Starting..."
             sudo systemctl start postgresql
