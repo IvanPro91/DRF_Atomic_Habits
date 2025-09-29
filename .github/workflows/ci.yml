@@ -6,18 +6,18 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    - name: Install Poetry
-      run: pip install poetry
-    - name: Install dependencies
-      run: poetry install --no-root
-    - name: Run Flake8
-      run: poetry run flake8 .
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install --no-root
+      - name: Run Flake8
+        run: poetry run flake8 .
 
   test:
     runs-on: ubuntu-latest
@@ -47,18 +47,9 @@ jobs:
         run: pip install poetry
       - name: Install dependencies
         run: poetry install --no-root
-      - name: Makemigrations
-        env:
-          SECRET_KEY: ${{ secrets.SSH_KEY }}
-          DATABASE_NAME: drf_atomic_habits
-          DATABASE_USER: postgres
-          DATABASE_PASSWORD: 2222
-          DATABASE_HOST: localhost
-          DATABASE_PORT: 5432
-        run: poetry run python manage.py makemigrations
       - name: Run tests
         env:
-          SECRET_KEY: ${{ secrets.SSH_KEY }}
+          SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           DATABASE_NAME: drf_atomic_habits
           DATABASE_USER: postgres
           DATABASE_PASSWORD: 2222
@@ -69,80 +60,93 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: test
+    if: github.ref == 'refs/heads/feature/ci-cd'
     steps:
-    - name: Set up SSH
-      uses: webfactory/ssh-agent@v0.5.4
-      with:
-        ssh-private-key: ${{ secrets.SSH_KEY }}
-    - name: Add server to known_hosts
-      run: |
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-    - name: Copy project files to server
-      run: |
+
+      - name: Copy project files to server
+        run: |
           ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
-            if [ ! -d "${{ secrets.DEPLOY_DIR }}" ]; then
-              echo "Cloning repository into ${{ secrets.DEPLOY_DIR }}..."
-              git clone "https://github.com/IvanPro91/DRF_Atomic_Habits.git" "${{ secrets.DEPLOY_DIR }}"
-            fi
-        
-            cd "${{ secrets.DEPLOY_DIR }}"
-            git fetch origin
-            git checkout "feature/ci-cd"
-            git reset --hard "origin/feature/ci-cd"
+          DEPLOY_DIR="${{ secrets.DEPLOY_DIR }}"
+          if [ ! -d "\$DEPLOY_DIR/.git" ]; then
+            echo "Cloning repository into \$DEPLOY_DIR..."
+            git clone "https://github.com/IvanPro91/DRF_Atomic_Habits.git" "\$DEPLOY_DIR"
+          fi
+          cd "\$DEPLOY_DIR"
+          git fetch origin
+          git checkout "feature/ci-cd"
+          git reset --hard "origin/feature/ci-cd"
           EOF
-    - name: Install dependencies on server
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ${{ secrets.DEPLOY_DIR }}
+
+      - name: Install dependencies on server
+        run: |
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          cd "${{ secrets.DEPLOY_DIR }}"
           curl -sSL https://install.python-poetry.org | python3 -
-           ~/.local/bin/poetry install --no-root
-        EOF
-    - name: Setup and configure PostgreSQL
-      run: |
-        ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
-        
-        sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.DB_USER }}';" | grep -q 1 || \
-          sudo -u postgres psql -c "CREATE USER ${{ secrets.DB_USER }} WITH PASSWORD '${{ secrets.DB_PASSWORD }}';"
-        
-        sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${{ secrets.DB_NAME }}';" | grep -q 1 || \
-          sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.DB_NAME }} OWNER ${{ secrets.DB_USER }};"
-        
-        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${{ secrets.DB_NAME }} TO ${{ secrets.DB_USER }};"
-        EOF
-    - name: Check PostgreSQL status
-      run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "sudo systemctl status postgresql@16-main"
-    - name: Create .env file on server
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ${{ secrets.DEPLOY_DIR }}
+          ~/.local/bin/poetry install --no-root
+          EOF
+
+      - name: Setup and configure PostgreSQL
+        run: |
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          if ! systemctl is-active --quiet postgresql; then
+            echo "PostgreSQL is not running. Starting..."
+            sudo systemctl start postgresql
+          else
+            echo "PostgreSQL is already running."
+          fi
+          sudo systemctl enable postgresql
+
+          sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${{ secrets.DB_USER }}';" | grep -q 1 || \
+            sudo -u postgres psql -c "CREATE USER ${{ secrets.DB_USER }} WITH PASSWORD '${{ secrets.DB_PASSWORD }}';"
+
+          sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='${{ secrets.DB_NAME }}';" | grep -q 1 || \
+            sudo -u postgres psql -c "CREATE DATABASE ${{ secrets.DB_NAME }} OWNER ${{ secrets.DB_USER }};"
+
+          sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${{ secrets.DB_NAME }} TO ${{ secrets.DB_USER }};"
+          EOF
+
+      - name: Create .env file on server
+        run: |
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          cd "${{ secrets.DEPLOY_DIR }}"
           cat > .env <<EOL
+          SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
           DATABASE_NAME=${{ secrets.DB_NAME }}
           DATABASE_USER=${{ secrets.DB_USER }}
           DATABASE_PASSWORD=${{ secrets.DB_PASSWORD }}
           DATABASE_HOST=localhost
           DATABASE_PORT=5432
           EOL
-        EOF
-    - name: Apply migrations
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-        cd ${{ secrets.DEPLOY_DIR }}
-        PGPASSWORD='${{ secrets.DB_PASSWORD }}' psql -h localhost -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c "SELECT 1;" || exit 1
-        poetry run python manage.py migrate --no-input
-        poetry run python manage.py showmigrations
-        EOF
-    - name: Collect static files on server
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ${{ secrets.DEPLOY_DIR }}
+          EOF
+
+      - name: Apply migrations
+        run: |
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          cd "${{ secrets.DEPLOY_DIR }}"
+          PGPASSWORD='${{ secrets.DB_PASSWORD }}' psql -h localhost -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c "SELECT 1;" || exit 1
+          ~/.local/bin/poetry run python manage.py migrate --no-input
+          EOF
+
+      - name: Collect static files on server
+        run: |
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          cd "${{ secrets.DEPLOY_DIR }}"
           mkdir -p static
-          poetry run python manage.py collectstatic --noinput
-        EOF
-    - name: Restart application
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ${{ secrets.DEPLOY_DIR }}
+          ~/.local/bin/poetry run python manage.py collectstatic --noinput
+          EOF
+
+      - name: Restart application
+        run: |
+          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          cd "${{ secrets.DEPLOY_DIR }}"
           pkill -f "gunicorn config.wsgi:application" || true
           sudo systemctl restart drf_atomic_habits.service
-        EOF
+          EOF
