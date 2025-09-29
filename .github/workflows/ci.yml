@@ -152,14 +152,6 @@ jobs:
           ~/.local/bin/poetry run python manage.py migrate --no-input
           EOF
 
-      - name: Collect static files on server
-        run: |
-          ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
-          cd "${{ secrets.DEPLOY_DIR }}"
-          mkdir -p static
-          ~/.local/bin/poetry run python manage.py collectstatic --noinput
-          EOF
-
       - name: Restart application
         run: |
           ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
