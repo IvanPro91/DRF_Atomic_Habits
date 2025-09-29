@@ -22,7 +22,7 @@ class Habits(models.Model):
     )
     action = models.CharField(max_length=500, verbose_name="Действие")
     is_pleasant = models.BooleanField(verbose_name="Признак приятной привычки", default=False)
-    related_habit = models.ForeignKey(
+    fk_habits = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
         verbose_name="Связанная привычка",
