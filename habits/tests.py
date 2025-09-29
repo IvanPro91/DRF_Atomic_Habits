@@ -262,7 +262,6 @@ class HabitTestCase(APITestCase):
         # Должны видеть 3 свои привычки
         self.assertEqual(len(response.data["results"]), 4)  # 4 созданные + возможно пагинация
 
-
     def test_habit_update_other_user_habit_error(self):
         """Тест ошибки при обновлении чужой привычки"""
         url = reverse("habits:habit-update", args=(self.public_habit_user2.id,))
