@@ -152,10 +152,11 @@ jobs:
           ~/.local/bin/poetry run python manage.py migrate --no-input
           EOF
 
-      - name: Restart application
+      - name: Start Django application
         run: |
           ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
           cd "${{ secrets.DEPLOY_DIR }}"
           pkill -f "gunicorn config.wsgi:application" || true
-          sudo systemctl restart drf_atomic_habits.service
+          nohup ~/.local/bin/poetry run gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 > app.log 2>&1 &
+          echo "Application started in background"
           EOF
