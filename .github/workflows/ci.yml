@@ -37,42 +37,25 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
-    - name: Install Poetry
-      run: pip install poetry
-    - name: Install dependencies
-      run: poetry install --no-root
-    - name: Run migrations
-      env:
-        SECRET_KEY: ${{ secrets.SECRET_KEY }}
-        TELEGRAM_BOT_API: ${{ secrets.TELEGRAM_BOT_API }}
-        CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
-        CELERY_RESULT_BACKEND: ${{ secrets.CELERY_RESULT_BACKEND }}
-        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
-        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
-        EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
-        EMAIL_USE_SSL: ${{ secrets.EMAIL_USE_SSL }}
-        DATABASE_NAME: drf_atomic_habits
-        DATABASE_USER: postgres
-        DATABASE_PASSWORD: 2222
-        DATABASE_HOST: localhost
-        DATABASE_PORT: 5432
-      run: poetry run python manage.py migrate
-    - name: Run tests
-      env:
-        DATABASE_NAME: drf_atomic_habits
-        DATABASE_USER: postgres
-        DATABASE_PASSWORD: 2222
-        DATABASE_HOST: localhost
-        DATABASE_PORT: 5432
-      run: poetry run python manage.py test
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install --no-root
+      - name: Run tests
+        env:
+          SECRET_KEY: ${{ secrets.SSH_KEY }}
+          DATABASE_NAME: drf_atomic_habits
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: 2222
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+        run: poetry run python manage.py test
 
   deploy:
     runs-on: ubuntu-latest

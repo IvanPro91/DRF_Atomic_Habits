@@ -133,12 +133,6 @@ CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 AUTH_USER_MODEL = "users.User"
-# CELERY_BEAT_SCHEDULE = {
-#     "Деактивация неактивных пользователей": {
-#         "task": "users.tasks.user_active_period",
-#         "schedule": timedelta(days=1)
-#     }
-# }
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 5312))
