@@ -84,7 +84,7 @@ jobs:
           if [ ! -d "\$DEPLOY_DIR/.git" ]; then
             echo "Cloning repository into \$DEPLOY_DIR..."
             mkdir -p "\$DEPLOY_DIR"
-            git clone https://github.com/your-username/DRF_Atomic_Habits.git "\$DEPLOY_DIR"
+            git clone https://github.com/IvanPro91/DRF_Atomic_Habits.git "\$DEPLOY_DIR"
           else
             echo "Updating existing repository..."
             cd "\$DEPLOY_DIR"
