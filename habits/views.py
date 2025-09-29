@@ -15,7 +15,7 @@ class HabitCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         habit = serializer.save(user=self.request.user)
         if not habit.is_pleasant:
-            replacements = create_replacements(habit)
+            replacements = create_replacements()
             habit.frequency = make_replacements(habit.frequency, replacements)
             habit.save()
 
