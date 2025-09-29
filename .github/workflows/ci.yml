@@ -49,6 +49,16 @@ jobs:
       run: poetry install --no-root
     - name: Run migrations
       env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        TELEGRAM_BOT_API: ${{ secrets.TELEGRAM_BOT_API }}
+        CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
+        CELERY_RESULT_BACKEND: ${{ secrets.CELERY_RESULT_BACKEND }}
+        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+        EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+        EMAIL_USE_SSL: ${{ secrets.EMAIL_USE_SSL }}
         DB_NAME: drf_atomic_habits
         DB_USER: postgres
         DB_PASSWORD: 2222
@@ -57,6 +67,16 @@ jobs:
       run: poetry run python manage.py migrate
     - name: Run tests
       env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        TELEGRAM_BOT_API: ${{ secrets.TELEGRAM_BOT_API }}
+        CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
+        CELERY_RESULT_BACKEND: ${{ secrets.CELERY_RESULT_BACKEND }}
+        EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+        EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+        EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
+        EMAIL_HOST_PASSWORD: ${{ secrets.EMAIL_HOST_PASSWORD }}
+        EMAIL_USE_TLS: ${{ secrets.EMAIL_USE_TLS }}
+        EMAIL_USE_SSL: ${{ secrets.EMAIL_USE_SSL }}
         DB_NAME: drf_atomic_habits
         DB_USER: postgres
         DB_PASSWORD: 2222
