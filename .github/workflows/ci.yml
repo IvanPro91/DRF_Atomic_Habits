@@ -95,7 +95,7 @@ jobs:
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd ${{ secrets.DEPLOY_DIR }}
           curl -sSL https://install.python-poetry.org | python3 -
-          poetry install --no-root
+           ~/.local/bin/poetry install --no-root
         EOF
     - name: Setup and configure PostgreSQL
       run: |
