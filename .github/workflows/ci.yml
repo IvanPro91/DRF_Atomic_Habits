@@ -80,19 +80,15 @@ jobs:
     - name: Copy project files to server
       run: |
           ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
-            DEPLOY_DIR="${{ secrets.DEPLOY_DIR }}"
-            REPO_URL="https://github.com/IvanPro91/DRF_Atomic_Habits.git"
-            BRANCH="feature/ci-cd"
-        
-            if [ ! -d "\$DEPLOY_DIR/.git" ]; then
-              echo "Cloning repository into \$DEPLOY_DIR..."
-              git clone "\$REPO_URL" "\$DEPLOY_DIR"
+            if [ ! -d "${{ secrets.DEPLOY_DIR }}" ]; then
+              echo "Cloning repository into ${{ secrets.DEPLOY_DIR }}..."
+              git clone "https://github.com/IvanPro91/DRF_Atomic_Habits.git" "${{ secrets.DEPLOY_DIR }}"
             fi
         
-            cd "\$DEPLOY_DIR"
+            cd "${{ secrets.DEPLOY_DIR }}"
             git fetch origin
-            git checkout "\$BRANCH"
-            git reset --hard "origin/\$BRANCH"
+            git checkout "feature/ci-cd"
+            git reset --hard "origin/feature/ci-cd"
           EOF
     - name: Install dependencies on server
       run: |
