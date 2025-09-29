@@ -79,18 +79,13 @@ jobs:
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
     - name: Copy project files to server
       run: |
-         ssh -T -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
-          DEPLOY_DIR="${{ secrets.DEPLOY_DIR }}"
-          if [ ! -d "\$DEPLOY_DIR/.git" ]; then
-            echo "Cloning repository into in \$DEPLOY_DIR..."
-            mkdir -p "\$DEPLOY_DIR"
-            git clone https://github.com/IvanPro91/DRF_Atomic_Habits.git "\$DEPLOY_DIR"
-          else
-            echo "Updating existing repository..."
-            cd "\$DEPLOY_DIR"
-            git fetch --prune
-            git reset --hard origin/ci_cd
-          fi
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
+          DEPLOY_DIR=${{ secrets.DEPLOY_DIR }}
+          git clone https://github.com/IvanPro91/DRF_Atomic_Habits.git "\$DEPLOY_DIR"
+          sudo mkdir -p $DEPLOY_DIR
+          cd $DEPLOY_DIR
+          git fetch --prune
+          git reset --hard origin/ci_cd
         EOF
     - name: Install dependencies on server
       run: |
