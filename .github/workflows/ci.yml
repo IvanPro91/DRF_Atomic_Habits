@@ -47,6 +47,15 @@ jobs:
         run: pip install poetry
       - name: Install dependencies
         run: poetry install --no-root
+	  - name: Makemigrations
+        env:
+          SECRET_KEY: ${{ secrets.SSH_KEY }}
+          DATABASE_NAME: drf_atomic_habits
+          DATABASE_USER: postgres
+          DATABASE_PASSWORD: 2222
+          DATABASE_HOST: localhost
+          DATABASE_PORT: 5432
+        run: poetry run python manage.py makemigrations
       - name: Run tests
         env:
           SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
