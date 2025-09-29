@@ -80,8 +80,10 @@ jobs:
     - name: Copy project files to server
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << "EOF"
-          sudo mkdir -p ${{ secrets.DEPLOY_DIR }}
-          cd ${{ secrets.DEPLOY_DIR }}
+          DEPLOY_DIR=${{ secrets.DEPLOY_DIR }}
+          git clone https://github.com/IvanPro91/DRF_Atomic_Habits "\$DEPLOY_DIR"
+          sudo mkdir -p $DEPLOY_DIR
+          cd $DEPLOY_DIR
           git fetch --prune
           git reset --hard origin/ci_cd
         EOF
