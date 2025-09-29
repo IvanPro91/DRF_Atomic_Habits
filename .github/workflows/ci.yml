@@ -84,7 +84,7 @@ jobs:
           sudo mkdir -p ${{ secrets.DEPLOY_DIR }}
           cd ${{ secrets.DEPLOY_DIR }}
           git fetch --prune
-          git reset --hard origin/ci_cd
+          git reset --hard feature/ci-cd
         EOF
     - name: Install dependencies on server
       run: |
